@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EverMind
 
-## Getting Started
+**An executive digital twin that thinks like you, and never acts without you.**
 
-First, run the development server:
+EverMind is a demo web app of an AI twin for Dr. Md. Sabur Khan, Chair of the Board of Trustees at Daffodil University Group. The twin learns from his book, board minutes, speeches and a voice interview. It answers questions with sources, drafts replies for approval and records every action in an audit trail.
+
+> This is a **seeded demo**. All data lives in the browser (`localStorage`). No messages are sent, no money moves and no real AI model is called.
+
+Current version: **0.3.0**. See [CHANGELOG.md](CHANGELOG.md).
+
+## Quick start
+
+Requires Node.js 20 or later.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server with Turbopack on port 3000 |
+| `npm run build` | Production build |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Stack
 
-## Learn More
+- **Next.js 16** (App Router) and **React 19**. This Next.js version has breaking changes; read `node_modules/next/dist/docs/` before changing framework code (see [AGENTS.md](AGENTS.md)).
+- **Three.js** via `@react-three/fiber` and `@react-three/drei` for the 3D twin.
+- **Framer Motion**, **GSAP** and **Lenis** for motion and smooth scrolling.
+- **Tailwind CSS 4** and plain CSS in `src/app/globals.css`.
+- **lucide-react** icons.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/
+    page.tsx              Landing page (marketing)
+    signin, signup, …     Auth and verification pages
+    onboarding/           Twin-building onboarding flow
+    (app)/                Signed-in app (shared sidebar layout)
+      home/               Daily brief
+      talk/               Talk to your twin: 3D avatar, voice, live states
+      ask/                Text Q&A with sources
+      decide/, decisions/ Decision Studio and decision log
+      approvals/          Drafts waiting for sign-off
+      knowledge/, memory/, brain/   What the twin knows
+      calendar/, email/, tasks/     Workspace modules
+      access/, audit/, security/, settings/   Governance and data
+  components/
+    twin-avatar.tsx       3D twin with state-driven motion (see docs/twin-states.md)
+    sidebar.tsx, ui.tsx, paper.tsx, …   Shared UI
+  lib/
+    demo.ts               localStorage store, seed data, demo answers
+    brain.ts, memories.ts, seed.ts      Knowledge and memory seeds
+public/twin/              3D model (avatar.glb) and portrait images
+docs/
+  MEMORY.md               Product principles and codebase notes
+  twin-states.md          How the Talk avatar reacts to the conversation
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Key ideas
 
-## Deploy on Vercel
+- **Autonomy levels.** L0 remember, L1 advise, L2 draft for approval, L3 simulated actions, and L4 (legal, financial, binding) always stays with the human.
+- **Every answer has a source.** Answers point back to the book, minutes or interview they came from.
+- **Approvals first.** The twin drafts; the person approves. Everything is logged in the audit trail.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Versioning and releases
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The project follows [Semantic Versioning](https://semver.org). The version lives in `package.json`, and each release gets an annotated git tag `vX.Y.Z` on `main` plus an entry in [CHANGELOG.md](CHANGELOG.md).
+
+To cut a release:
+
+```bash
+npm version minor --no-git-tag-version   # or patch / major
+# update CHANGELOG.md, then
+git commit -am "chore(release): vX.Y.Z"
+git tag -a vX.Y.Z -m "EverMind vX.Y.Z"
+git push origin main --follow-tags
+```
+
+Commit messages use [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`).
