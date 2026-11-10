@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useDemo, answerDemo, addRecord, preferenceSeed, profileSeed, notify, moduleSeeds, type RecordItem } from "@/lib/demo";
 import { C } from "@/components/paper";
+import DotField from "@/components/dot-field";
 import { ease } from "@/components/ui";
 
 type State = TwinMode;
@@ -180,16 +181,14 @@ export default function Talk() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      {/* dither texture top-left */}
-      <div
+      {/* Dot texture top-left, reacts to the cursor */}
+      <DotField
         style={{
           position: "absolute",
           left: 0,
           top: 0,
           width: 560,
           height: 520,
-          backgroundImage: "radial-gradient(rgba(143,216,176,0.22) 1.2px, transparent 1.6px)",
-          backgroundSize: "9px 9px",
           maskImage: "radial-gradient(ellipse at 0% 0%, black 20%, transparent 70%)",
         }}
       />
