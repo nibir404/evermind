@@ -32,7 +32,7 @@
   - Paper design language: `#F5F5F7` canvas, `#0E5A43` pine, `#D4F26A` lime accent, `#111113` ink.
   - Dither noise background gradients and soft elevation shadows.
 - **Interactive 3D Visuals (`src/components/three/`, `src/components/twin-avatar.tsx`)**:
-  - 3D stylized avatar bust with orbit controls and speaking animations.
+  - Full likeness-preserving 3D digital twin avatar loaded from `public/twin/avatar.glb` with `@react-three/drei` `useGLTF`, smooth orbital controls, speaking/breathing micro-animations, and dynamic contact shadows.
   - 3D/2D/List Knowledge Brain with elliptical clustering across 5 neuron categories.
 
 ## 4. Key Workspaces & Modules
@@ -48,3 +48,4 @@
 - [x] Linter clean (`npm run lint` passes).
 - [x] TypeScript clean (`npx tsc --noEmit` passes).
 - [x] All assets and pages in place.
+
