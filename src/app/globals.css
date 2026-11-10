@@ -506,7 +506,7 @@ img,video { max-width:100%; }
 .seg { display: inline-flex; gap: 2px; padding: 2px; background: #E9E8E4; border-radius: 6px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .seg::-webkit-scrollbar { display: none; }
 .seg button { height: 28px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #4A4752; white-space: nowrap; transition: background .2s, color .2s, box-shadow .2s; }
-.seg button[aria-pressed=true] { background: #fff; color: #111113; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06); }
+.seg button[aria-pressed=true], .seg button[aria-selected=true] { background: #fff; color: #111113; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06); }
 .seg button:hover:not([aria-pressed=true]) { color: #111113; }
 .seg small { margin-left: 6px; color: #8A8792; font-weight: 400; }
 
@@ -669,3 +669,33 @@ img,video { max-width:100%; }
 .spot-empty { padding: 28px; text-align: center; color: #6B6873; font-size: 14px; }
 .spot-foot { display: flex; gap: 18px; padding: 10px 18px; border-top: 1px solid #EDECE8; font-size: 12px; color: #6B6873; }
 .spot-foot kbd { margin-right: 3px; }
+
+/* ---------- Book print layout (Publish → PDF) ---------- */
+.book-print { display: none; }
+@media print {
+  @page { size: A4; margin: 22mm 20mm; }
+  html, body { background: #fff !important; }
+  body * { visibility: hidden; }
+  .book-print, .book-print * { visibility: visible; }
+  .book-print { display: block; position: absolute; inset: 0 auto auto 0; width: 100%; color: #111113; font-family: var(--font-serif), Georgia, serif; font-size: 12pt; line-height: 1.65; }
+  .app-sidebar, .demo-toast, .spot-backdrop { display: none !important; }
+  .bp-cover { height: 240mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .bp-cover h1 { font-size: 40pt; line-height: 1.05; letter-spacing: -0.02em; margin: 6mm 0; }
+  .bp-toc { page-break-after: always; }
+  .bp-toc h2 { font-size: 20pt; margin-bottom: 8mm; }
+  .bp-toc ol { list-style: none; padding: 0; counter-reset: ch; }
+  .bp-toc li { counter-increment: ch; display: flex; justify-content: space-between; gap: 8mm; padding: 2.5mm 0; border-bottom: 0.3pt solid #D9D7D2; }
+  .bp-toc li span:first-child::before { content: counter(ch) ".  "; color: #0E5A43; }
+  .bp-toc li span:last-child { color: #6B6873; font-family: system-ui, sans-serif; font-size: 9pt; }
+  .bp-chapter { page-break-before: always; }
+  .bp-chapter:first-of-type { page-break-before: auto; }
+  .bp-chapter h1 { font-size: 28pt; line-height: 1.1; margin: 2mm 0 4mm; }
+  .bp-chapter h2 { font-size: 16pt; margin: 8mm 0 3mm; }
+  .bp-chapter p { margin: 0 0 4mm; orphans: 3; widows: 3; }
+  .bp-chapter blockquote { margin: 6mm 0; padding-left: 5mm; border-left: 1pt solid #0E5A43; color: #0E5A43; font-style: italic; font-size: 14pt; }
+  .bp-chapter aside { margin: 4mm 0; padding: 3mm 4mm; background: #E2F0E8; color: #0E5A43; font-family: system-ui, sans-serif; font-size: 10pt; }
+  .bp-chapter a { color: #0E5A43; }
+  .bp-kicker { font-family: system-ui, sans-serif; font-size: 8pt; letter-spacing: 0.14em; text-transform: uppercase; color: #0E5A43; }
+  .bp-dek { font-style: italic; color: #4A4752; font-size: 13pt; margin-bottom: 8mm; }
+  .bp-meta { margin-top: 12mm; font-family: system-ui, sans-serif; font-size: 9pt; color: #6B6873; }
+}
