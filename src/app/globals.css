@@ -969,3 +969,11 @@ img,video { max-width:100%; }
   .chat-bottom { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
   .chat-empty { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
+/* Tab bar legibility: stronger frost so content behind never competes with the labels. */
+@media (max-width: 767px) {
+  .tabbar {
+    background: linear-gradient(180deg, rgba(250,250,250,.86), rgba(244,244,242,.78)) !important;
+    backdrop-filter: blur(40px) saturate(180%) brightness(1.06) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.06) !important;
+  }
+}
