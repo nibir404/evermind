@@ -1,5 +1,5 @@
 "use client";
-import { useDemo, readDemo, writeDemo, moduleSeeds, audit, notify, preferenceSeed, type RecordItem } from "@/lib/demo";
+import { useDemo, readDemo, writeDemo, moduleSeeds, audit, notify, preferenceSeed, type RecordItem, approvalQueueSeed } from "@/lib/demo";
 import { PButton } from "@/components/paper";
 
 // 1:1 port of Paper "08 · Approvals" (6VO-0) + "S · 08 Approvals — Sent" (6ZC-0)
@@ -34,7 +34,7 @@ export default function Approvals() {
   const [declined, setDeclined] = useDemo("approval-declined", false);
   const [draft,setDraft] = useDemo("approval-draft", "Dear Professor,\n\nThank you for the visit. We would like to begin with one joint pathway in Computer Science for the first cohort, then review together before adding more programmes.\n\nDr. Sabur Khan");
   const [prefs] = useDemo("preferences",preferenceSeed);
-  const [queue,setQueue] = useDemo<RecordItem[]>("approval-queue",[]);
+  const [queue,setQueue] = useDemo<RecordItem[]>("approval-queue",approvalQueueSeed);
   const approve=()=>{if(prefs.paused||prefs.retired||!prefs.draft)return notify("Resume your twin and enable drafting in Settings first.");setSent(true);audit("Approved Wollongong reply — demo delivery only","Approvals");notify("Simulated send saved. No email was sent.");};
 
   return (

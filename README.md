@@ -6,7 +6,7 @@ EverMind is a demo web app of an AI twin for Dr. Md. Sabur Khan, Chair of the Bo
 
 > This is a **seeded demo**. All data lives in the browser (`localStorage`). No messages are sent, no money moves and no real AI model is called.
 
-Current version: **0.3.1**. See [CHANGELOG.md](CHANGELOG.md).
+Current version: **0.4.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Quick start
 

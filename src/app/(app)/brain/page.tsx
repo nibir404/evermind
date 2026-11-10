@@ -9,7 +9,7 @@ import { BrainGraph } from "@/components/three";
 import { typeColor, type NeuronType } from "@/components/three/brain-graph";
 import { C, ditherBg } from "@/components/paper";
 import { ease } from "@/components/ui";
-import { brain, byId, typeLabel, type BrainItem } from "@/lib/brain";
+import { brain, byId, typeLabel, allBrain, fieldIds, type BrainItem } from "@/lib/brain";
 
 type View = "List" | "Graph" | "3D";
 const types: [NeuronType, string, string][] = [
@@ -165,6 +165,8 @@ export default function Brain() {
   const node = byId[selected];
   const items = brain.filter((b) => (!filter || b.type === filter) && (!q || (b.label + b.summary).toLowerCase().includes(q.toLowerCase())));
   const labels = labels3d.filter(([id])=>items.some(x=>x.id===id)).map(([id, at]) => ({ id, at, label: byId[id].label, type: byId[id].type }));
+  const nodes = useMemo(() => fieldIds.map((id) => ({ id, label: byId[id].label, type: byId[id].type })), []);
+  const visible = useMemo(() => (filter || q ? new Set(allBrain.filter((b) => (!filter || b.type === filter) && (!q || (b.label + b.summary).toLowerCase().includes(q.toLowerCase()))).map((b) => b.id)) : undefined), [filter, q]);
 
   return (
     <div className="brain-screen" style={{ position: "fixed", inset: 0, zIndex: 50, color: "#fff", background: "radial-gradient(ellipse 50% 55% at 48% 50%, #1F5A47 0%, #0E2E25 75%), #0E2E25", fontFamily: "system-ui, -apple-system, sans-serif" }}>
@@ -172,7 +174,7 @@ export default function Brain() {
       <div className="brain-stage" style={{ position: "absolute", inset: view === "List" ? "120px 390px 110px 268px" : "100px 380px 110px 260px" }}>
         <AnimatePresence mode="wait">
           <motion.div key={view} initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.985 }} transition={{ duration: 0.4, ease }} style={{ width: "100%", height: "100%" }}>
-            {view === "3D" && <BrainGraph labels={labels} selected={selected} onSelect={setSelected} zoom={zoom} />}
+            {view === "3D" && <BrainGraph labels={labels} nodes={nodes} visible={visible} selected={selected} onSelect={setSelected} zoom={zoom} />}
             {view === "Graph" && <GraphView items={items} selected={selected} onSelect={setSelected} zoom={zoom} />}
             {view === "List" && <ListView items={items} selected={selected} onSelect={setSelected} />}
           </motion.div>

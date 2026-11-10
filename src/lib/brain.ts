@@ -56,3 +56,101 @@ export const brain: BrainItem[] = [
 
 export const byId = Object.fromEntries(brain.map((b) => [b.id, b]));
 export const typeLabel: Record<NeuronType, string> = { principle: "Principle", decision: "Decision", memory: "Memory", person: "Person", source: "Source" };
+
+/* ---------- Every dot in the 3D brain is a record ----------
+   The 3D field has FIELD_SIZE neurons; field index i has type TYPES[i % 5].
+   Hand-written items above fill the first matching slots (pinned ones keep
+   their fixed slot), and the remaining slots get generated, plausible records
+   so every dot can be hovered and opened. */
+export const FIELD_SIZE = 140;
+const TYPES: NeuronType[] = ["principle", "decision", "memory", "person", "source"];
+export const pinned3d: Record<string, number> = { "students-first": 5, wollongong: 21, "strategy-2030": 24, "convocation-24": 12, rahman: 18, "careful-debt": 40, "book-2025": 54 };
+
+const pools: Record<NeuronType, { label: string; summary: string; source: string; date: string }[]> = {
+  principle: [
+    ["Prove it small, then scale", "Pilot with one cohort before committing a whole faculty.", "Interview · session 3", "Nov 2026"],
+    ["Reputation compounds", "Turns down fast money that could cost trust with parents.", "Your book, 2025 · ch. 5", "2025"],
+    ["Hire for character", "Weighs integrity above CVs for leadership roles.", "Board minutes 2017", "2017"],
+    ["Technology serves teaching", "New tools must show better learning, not just novelty.", "AUAP keynote", "Nov 2026"],
+    ["Pay vendors on time", "Treats suppliers as partners; late payment is a breach of trust.", "Finance committee", "2019"],
+    ["Write it down", "Every major decision gets a one-page written rationale.", "Interview · session 1", "Oct 2026"],
+    ["Rural students matter", "Seeks scholarships for students outside Dhaka.", "Scholarship committee", "2023"],
+    ["Measure outcomes yearly", "Reviews every major decision 12 months later.", "Board minutes 2021", "2021"],
+    ["Patience with founders", "Gives incubator teams two pilots before judging.", "Incubator charter", "2022"],
+    ["Say no kindly", "Declines quickly and personally rather than leaving people waiting.", "Email patterns", "2024"],
+  ].map(([label, summary, source, date]) => ({ label, summary, source, date })),
+  decision: [
+    ["Free laptop programme", "Extended to 6,000 first-year students with a skills course.", "Board resolution", "Sep 2026"],
+    ["Close evening MBA intake", "Low enrolment for three terms; faculty moved to executive MBA.", "Board minutes 2024", "2024"],
+    ["Telemedicine pilot", "Two districts, only with a licensed medical partner.", "Decision Studio", "Nov 2026"],
+    ["Solar roof on Smart City", "Approved after a 6-year payback case.", "Facilities committee", "2023"],
+    ["Hostel fee cap", "Capped increases at 5% for three years.", "Board minutes 2022", "2022"],
+    ["Join AUAP board", "Accepted a two-year term to raise DIU's profile.", "Email", "2025"],
+    ["Pause new ICT venture", "Waited for a proven operator before launch.", "Investment committee", "2024"],
+    ["Industry advisory panels", "Every department gets an employer panel.", "Academic council", "2021"],
+  ].map(([label, summary, source, date]) => ({ label, summary, source, date })),
+  memory: [
+    ["First campus in Dhanmondi", "Started with rented floors and 600 students.", "Your book, 2025 · ch. 1", "2002"],
+    ["Graduate who founded a startup", "A 2016 graduate now employs 300 people.", "Convocation transcript", "2023"],
+    ["Visit to Wollongong", "Walked the campus with the registrar; agreed to start small.", "Travel notes", "Sep 2026"],
+    ["COVID online switch", "Moved 20,000 students online in nine days.", "Board minutes 2020", "2020"],
+    ["Letter from a parent", "Thanked him for keeping fees flat in the floods.", "Letters archive", "2020"],
+    ["Budapest keynote", "Spoke on quality over speed in partnerships.", "AUAP keynote", "Nov 2026"],
+    ["The failed franchise deal", "Walked away when the partner wanted to cut faculty pay.", "Interview · session 4", "2015"],
+    ["Opening Smart City", "Ashulia campus opened with 12,000 students.", "Press archive", "2016"],
+  ].map(([label, summary, source, date]) => ({ label, summary, source, date })),
+  person: [
+    ["Dr. M. Lutfar Rahman", "Vice-Chancellor. Trusted on academic policy.", "Board minutes", "Since 2012"],
+    ["Ayesha Khan", "Family. Beneficiary in Digital Legacy.", "Legacy settings", "Since 2026"],
+    ["Prof. Lee", "UOW International Office lead on the 2+2 pathway.", "Email · 18 threads", "Since 2026"],
+    ["Tanvir Alam", "Incubator director. Runs demo days.", "Calendar", "Since 2020"],
+    ["Nusrat Jahan", "Head of student affairs.", "Email · 96 threads", "Since 2018"],
+    ["Kamal Uddin", "Finance director. Owns the FY27 model.", "Finance committee", "Since 2015"],
+    ["Ms. Chowdhury", "Event organiser who requested sponsorship.", "Email", "Nov 2026"],
+  ].map(([label, summary, source, date]) => ({ label, summary, source, date })),
+  source: [
+    ["Annual report 2025", "Group-wide numbers across 50+ concerns.", "PDF · 84 pages", "2025"],
+    ["Employability survey 2025", "Placement by department; two below target.", "Survey export", "Nov 2026"],
+    ["Interview · session 3", "Growth and pilots. 35 minutes.", "Audio", "Nov 2026"],
+    ["AUAP keynote transcript", "17 memories on partnerships.", "Audio transcript", "Nov 2026"],
+    ["Convocation speeches", "Five speeches, 2019–2024.", "Transcripts", "2019–2024"],
+    ["Email archive · 2024", "Tone and stakeholder patterns.", "Mailbox export", "2024"],
+    ["Press archive", "Interviews and coverage since 2002.", "Clippings", "2002–2026"],
+  ].map(([label, summary, source, date]) => ({ label, summary, source, date })),
+};
+
+const statuses: BrainItem["status"][] = ["Verified", "Confirmed", "Inferred", "Inferred", "Unknown"];
+const generated: BrainItem[] = [];
+const slots: (string | undefined)[] = Array(FIELD_SIZE).fill(undefined);
+Object.entries(pinned3d).forEach(([id, at]) => { slots[at] = id; });
+const queue: Record<NeuronType, string[]> = { principle: [], decision: [], memory: [], person: [], source: [] };
+brain.filter((b) => !(b.id in pinned3d)).forEach((b) => queue[b.type].push(b.id));
+const used: Record<NeuronType, number> = { principle: 0, decision: 0, memory: 0, person: 0, source: 0 };
+for (let i = 0; i < FIELD_SIZE; i++) {
+  if (slots[i]) continue;
+  const t = TYPES[i % 5];
+  const real = queue[t].shift();
+  if (real) { slots[i] = real; continue; }
+  const pool = pools[t];
+  const n = used[t]++;
+  const base = pool[n % pool.length];
+  const round = Math.floor(n / pool.length);
+  const anchor = brain.filter((b) => b.type === t);
+  const id = `${t}-gen-${i}`;
+  generated.push({
+    id,
+    label: round ? `${base.label} (${round + 1})` : base.label,
+    type: t,
+    status: statuses[(i * 7) % statuses.length],
+    summary: base.summary,
+    source: base.source,
+    date: base.date,
+    strength: 20 + ((i * 37) % 60),
+    links: [anchor[i % anchor.length]?.id].filter(Boolean) as string[],
+  });
+  slots[i] = id;
+}
+export const allBrain: BrainItem[] = [...brain, ...generated];
+/** Field index → record id, for the 3D view. */
+export const fieldIds = slots as string[];
+Object.assign(byId, Object.fromEntries(generated.map((g) => [g.id, g])));

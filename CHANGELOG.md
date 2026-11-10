@@ -2,6 +2,22 @@
 
 All notable changes to EverMind are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org).
 
+## [0.4.0] - 2026-11-10
+
+### Added
+- **Spotlight search** (⌘K, or the search button in the sidebar) reaches every screen and every record.
+- **Sample data for every module**, plus a seeded approval queue and audit trail, so each flow can be tested end to end.
+- **Knowledge brain:** all 140 dots carry a record and show a tooltip on hover; selecting one opens its details.
+- **Book editor:** rich text that is saved (bold, italic, links), drag and Alt+arrow reordering, a block menu (heading, quote, memory note, move, duplicate, delete), inline comments, "Rewrite with twin" on the selected text, and a keyboard-driven / menu.
+- Favicon (SVG), Apple touch icon, web manifest, Open Graph and Twitter images, full metadata and a title for each screen.
+
+### Changed
+- Home rebuilt around what matters today: the twin with live key numbers, group pulse, next approval, upcoming events, attention items, recent decisions and weekly trends.
+- One consistent style for dropdowns, fields, search and buttons; segmented status filters; split-view module lists with keyboard navigation; frosted sheets and toasts; consistent page spacing.
+
+### Fixed
+- Brain labels no longer cause React unmount errors.
+
 ## [0.3.1] - 2026-11-10
 
 ### Changed
@@ -41,6 +57,7 @@ All notable changes to EverMind are recorded here. The format follows [Keep a Ch
 ### Added
 - First complete demo: landing page, sign-up and onboarding, home brief, Talk with 3D avatar, Ask, Decision Studio, knowledge brain, approvals, calendar, email, tasks, access, audit trail, security and settings.
 
+[0.4.0]: https://github.com/nibir404/evermind/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nibir404/evermind/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nibir404/evermind/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nibir404/evermind/compare/v0.1.0...v0.2.0
