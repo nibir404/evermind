@@ -22,6 +22,12 @@ import {
   ArrowDown,
   Copy,
   Trash2,
+  ImagePlus,
+  Film,
+  Music,
+  Upload as UploadIcon,
+  ExternalLink,
+  Globe,
 } from "lucide-react";
 import { chapterThree, chapters, chapterSeeds } from "@/lib/seed";
 import { BookPublish, BookPrint, bookChapters } from "@/components/book-publish";
@@ -205,20 +211,24 @@ export default function Book() {
                     type={b.type}
                     onClose={() => setMenuFor(null)}
                     onType={(type) => { updateBlock(b.id, { type }); setMenuFor(null); }}
-                    onDuplicate={() => { insertAfter(b.id, { type: b.type, html: b.html }); setMenuFor(null); }}
+                    onDuplicate={() => { insertAfter(b.id, { type: b.type, html: b.html, src: b.src, caption: b.caption, title: b.title }); setMenuFor(null); }}
                     onUp={() => { moveBlock(b.id, i - 1); setMenuFor(null); }}
                     onDown={() => { moveBlock(b.id, i + 1); setMenuFor(null); }}
                     onDelete={() => { removeBlock(b.id); setMenuFor(null); }}
                   />
                 )}
-                <RichBlock
-                  block={b}
-                  first={i === 0}
-                  editing={editing}
-                  onChange={(html) => updateBlock(b.id, { html })}
-                  onEnter={() => insertAfter(b.id, { type: "p", html: "" })}
-                  onBackspaceEmpty={() => blocks.length > 1 && removeBlock(b.id)}
-                />
+                {MEDIA.includes(b.type) ? (
+                  <MediaBlock block={b} editing={editing} onChange={(patch) => updateBlock(b.id, patch)} onRemove={() => removeBlock(b.id)} />
+                ) : (
+                  <RichBlock
+                    block={b}
+                    first={i === 0}
+                    editing={editing}
+                    onChange={(html) => updateBlock(b.id, { html })}
+                    onEnter={() => insertAfter(b.id, { type: "p", html: "" })}
+                    onBackspaceEmpty={() => blocks.length > 1 && removeBlock(b.id)}
+                  />
+                )}
                 {comments.filter((c) => c.block === b.id).map((c) => (
                   <div key={c.id} className="mb-6 -mt-4 flex items-start gap-2 rounded-[4px] border-l-2 border-[#E0A84F] bg-[#FBF6EC] px-3 py-2 text-[13px] 2xl:absolute 2xl:-right-[300px] 2xl:top-0 2xl:mt-0 2xl:w-[260px]">
                     <MessageSquare size={13} className="mt-0.5 shrink-0 text-[#8A5A12]" />
@@ -296,8 +306,9 @@ export default function Book() {
 }
 
 /* ---------------- Rich-text blocks ---------------- */
-type BlockType = "p" | "h2" | "quote" | "note";
-type Block = { id: string; type: BlockType; html: string };
+type BlockType = "p" | "h2" | "quote" | "note" | "image" | "video" | "audio" | "link";
+type Block = { id: string; type: BlockType; html: string; src?: string; caption?: string; title?: string };
+const MEDIA: BlockType[] = ["image", "video", "audio", "link"];
 type BookComment = { id: string; block: string; quote: string; note: string };
 const uid = () => Math.random().toString(36).slice(2, 10);
 const escapeHtml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -332,6 +343,7 @@ const blockClass: Record<BlockType, string> = {
   h2: "mb-5 mt-12 font-serif text-[32px] leading-tight tracking-[-0.01em]",
   quote: "my-10 border-l-2 border-pine pl-6 font-serif text-[26px] italic leading-snug text-pine",
   note: "mb-7 rounded-[4px] bg-pine-wash px-4 py-3 text-[15px] leading-relaxed text-pine",
+  image: "", video: "", audio: "", link: "",
 };
 
 function RichBlock({ block, first, editing, onChange, onEnter, onBackspaceEmpty }: { block: Block; first: boolean; editing: boolean; onChange: (html: string) => void; onEnter: () => void; onBackspaceEmpty: () => void }) {
@@ -380,15 +392,15 @@ function BlockMenu({ type, onClose, onType, onDuplicate, onUp, onDown, onDelete 
   const item = "flex w-full items-center gap-2.5 rounded-[4px] px-2.5 py-2 text-left text-[14px] hover:bg-canvas focus:bg-canvas outline-none";
   return (
     <div ref={ref} role="menu" className="surface absolute -left-10 top-9 z-30 w-[220px] p-1.5 shadow-lift">
-      <p className="eyebrow px-2.5 py-1.5">Turn into</p>
-      {(["p", "h2", "quote", "note"] as BlockType[]).map((t) => (
+      {!MEDIA.includes(type) && <p className="eyebrow px-2.5 py-1.5">Turn into</p>}
+      {!MEDIA.includes(type) && (["p", "h2", "quote", "note"] as BlockType[]).map((t) => (
         <button key={t} role="menuitem" className={item} onClick={() => onType(t)}>
           {t === "p" ? <Pencil size={15} /> : t === "h2" ? <Heading size={15} /> : t === "quote" ? <Quote size={15} /> : <ImageIcon size={15} />}
-          <span className="flex-1">{{ p: "Paragraph", h2: "Heading", quote: "Quote", note: "Memory note" }[t]}</span>
+          <span className="flex-1">{({ p: "Paragraph", h2: "Heading", quote: "Quote", note: "Memory note" } as Record<string, string>)[t]}</span>
           {type === t && <Check size={14} className="text-pine" />}
         </button>
       ))}
-      <div className="my-1 h-px bg-[#EDECE8]" />
+      {!MEDIA.includes(type) && <div className="my-1 h-px bg-[#EDECE8]" />}
       <button role="menuitem" className={item} onClick={onUp}><ArrowUp size={15} />Move up<kbd className="ml-auto text-[11px] text-mute">⌥↑</kbd></button>
       <button role="menuitem" className={item} onClick={onDown}><ArrowDown size={15} />Move down<kbd className="ml-auto text-[11px] text-mute">⌥↓</kbd></button>
       <button role="menuitem" className={item} onClick={onDuplicate}><Copy size={15} />Duplicate</button>
@@ -518,6 +530,103 @@ function FormatBar({ onComment }: { onComment: (blockId: string, quote: string, 
   );
 }
 
+/* ---------------- Media blocks: image, video, audio, link ---------------- */
+const MEDIA_LIMIT: Record<string, number> = { image: 2_000_000, audio: 4_000_000, video: 4_000_000 };
+const safeUrl = (u: string) => /^https?:\/\//i.test(u.trim()) ? u.trim() : "";
+function embedFor(url: string) {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/i);
+  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}`;
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+}
+const mediaMeta = { image: { Icon: ImagePlus, label: "Image", accept: "image/*", hint: "Paste an image link, or upload a photo up to 2 MB." }, video: { Icon: Film, label: "Video", accept: "video/*", hint: "Paste a YouTube or Vimeo link, or upload a short clip up to 4 MB." }, audio: { Icon: Music, label: "Audio", accept: "audio/*", hint: "Paste an audio link, or upload a voice note up to 4 MB." }, link: { Icon: Globe, label: "Link card", accept: "", hint: "Paste a web address to show it as a card." } } as const;
+
+function MediaBlock({ block, editing, onChange, onRemove }: { block: Block; editing: boolean; onChange: (patch: Partial<Block>) => void; onRemove: () => void }) {
+  const kind = block.type as keyof typeof mediaMeta;
+  const meta = mediaMeta[kind];
+  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [replacing, setReplacing] = useState(false);
+  const file = useRef<HTMLInputElement>(null);
+  const setSrc = (src: string, extra: Partial<Block> = {}) => { onChange({ src, ...extra }); setReplacing(false); setUrl(""); audit(`Added ${meta.label.toLowerCase()} to the book`, "Book"); };
+  const fromFile = (f?: File) => {
+    if (!f) return;
+    if (f.size > (MEDIA_LIMIT[kind] ?? 0)) return notify(`That file is too large for this demo. Use one under ${Math.round((MEDIA_LIMIT[kind] ?? 0) / 1_000_000)} MB, or paste a link.`);
+    const r = new FileReader();
+    r.onload = () => setSrc(String(r.result), { caption: block.caption || f.name.replace(/\.[^.]+$/, "") });
+    r.readAsDataURL(f);
+  };
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const u = safeUrl(url);
+    if (!u) return notify("Enter a link starting with http:// or https://");
+    if (kind === "link") return setSrc(u, { title: title.trim() || new URL(u).hostname.replace(/^www\./, "") });
+    setSrc(u);
+  };
+
+  if (!block.src || (editing && replacing)) {
+    if (!editing) return null;
+    return (
+      <div className="book-media-setup">
+        <div className="flex items-center gap-2 text-[14px] font-medium"><meta.Icon size={17} className="text-pine" />{meta.label}</div>
+        <form onSubmit={submit} className="flex flex-wrap gap-2">
+          <input data-bare autoFocus value={url} onChange={(e) => setUrl(e.target.value)} placeholder={kind === "video" ? "https://youtube.com/watch?v=…" : "https://"} aria-label={`${meta.label} link`} className="book-media-input" />
+          {kind === "link" && <input data-bare value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" aria-label="Link title" className="book-media-input" />}
+          <button type="submit" className="demo-button primary">{kind === "link" ? "Add card" : "Embed"}</button>
+          {kind !== "link" && (
+            <>
+              <button type="button" className="demo-button" onClick={() => file.current?.click()}><UploadIcon size={15} />Upload</button>
+              <input ref={file} type="file" accept={meta.accept} hidden onChange={(e) => fromFile(e.target.files?.[0])} />
+            </>
+          )}
+          <button type="button" className="demo-button" onClick={() => (block.src ? setReplacing(false) : onRemove())}>Cancel</button>
+        </form>
+        <p className="text-[12px] text-[#6B6873]">{meta.hint}</p>
+      </div>
+    );
+  }
+
+  const caption = editing ? (
+    <input data-bare value={block.caption ?? ""} onChange={(e) => onChange({ caption: e.target.value })} placeholder="Add a caption" aria-label="Caption" className="book-media-caption-input" />
+  ) : block.caption ? <figcaption className="book-media-caption">{block.caption}</figcaption> : null;
+
+  if (kind === "link") {
+    let host = "";
+    try { host = new URL(block.src).hostname.replace(/^www\./, ""); } catch { host = block.src; }
+    return (
+      <div className="book-media">
+        <a href={block.src} target="_blank" rel="noopener noreferrer" className="book-link-card">
+          <span className="book-link-icon"><Globe size={18} /></span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-[15px] font-medium text-ink">{block.title || host}</span><span className="block truncate text-[13px] text-[#6B6873]">{host}</span></span>
+          <ExternalLink size={16} className="shrink-0 text-[#8A8792]" />
+        </a>
+        {editing && <button className="book-media-replace" onClick={() => setReplacing(true)}>Change link</button>}
+      </div>
+    );
+  }
+
+  const embed = kind === "video" ? embedFor(block.src) : null;
+  return (
+    <figure className="book-media">
+      {kind === "image" && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={block.src} alt={block.caption || "Book image"} loading="lazy" className="book-media-img" />
+      )}
+      {kind === "video" && (embed ? (
+        <div className="book-media-frame"><iframe src={embed} title={block.caption || "Video"} allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" /></div>
+      ) : (
+        <video src={block.src} controls playsInline preload="metadata" className="book-media-video" />
+      ))}
+      {kind === "audio" && (
+        <div className="book-media-audio"><Music size={18} className="shrink-0 text-pine" /><audio src={block.src} controls preload="metadata" /></div>
+      )}
+      {caption}
+      {editing && <button className="book-media-replace" onClick={() => setReplacing(true)}>Replace {meta.label.toLowerCase()}</button>}
+    </figure>
+  );
+}
+
 function SlashLine({ onInsert }: { onInsert: (block: Omit<Block, "id">) => void }) {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
@@ -527,6 +636,10 @@ function SlashLine({ onInsert }: { onInsert: (block: Omit<Block, "id">) => void 
     { icon: Quote, label: "Pull quote from a source", hint: "Verified quote", make: () => ({ type: "quote", html: escapeHtml(chapterThree.quote) }) },
     { icon: ImageIcon, label: "Memory note", hint: "Linked memory", make: () => ({ type: "note", html: "Memory: Daffodil campus, Ashulia. He keeps the agenda folded in his jacket until the next morning." }) },
     { icon: Sparkles, label: "Ask twin to write a paragraph", hint: "Drafted from sources", make: () => ({ type: "p", html: "He builds institutions that outlast their founders, keeping students at the centre of every decision." }) },
+    { icon: ImagePlus, label: "Image", hint: "Upload or link", make: () => ({ type: "image", html: "" }) },
+    { icon: Film, label: "Video", hint: "YouTube, Vimeo or file", make: () => ({ type: "video", html: "" }) },
+    { icon: Music, label: "Audio", hint: "Voice note or recording", make: () => ({ type: "audio", html: "" }) },
+    { icon: Link2, label: "Link card", hint: "Preview of a web page", make: () => ({ type: "link", html: "" }) },
   ];
   const shown = items.filter((x) => x.label.toLowerCase().includes(text.slice(1).toLowerCase()));
   const choose = (i: number, el: HTMLElement) => { const it = shown[i]; if (!it) return; onInsert(it.make()); el.textContent = ""; setText(""); setOpen(false); setCursor(0); };

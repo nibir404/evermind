@@ -8,7 +8,7 @@ import { audit, download, notify, readDemo, useDemo } from "@/lib/demo";
 import { chapterSeeds, chapterThree } from "@/lib/seed";
 
 type Title = { n: number; title: string; status: string };
-type Block = { id: string; type: "p" | "h2" | "quote" | "note"; html: string };
+type Block = { id: string; type: "p" | "h2" | "quote" | "note" | "image" | "video" | "audio" | "link"; html: string; src?: string; caption?: string; title?: string };
 export type BookChapter = Title & { dek: string; blocks: Block[]; words: number; minutes: number };
 
 const BOOK_TITLE = "The Book of Dr. Sabur Khan";
@@ -46,15 +46,28 @@ function useChapters(titles: Title[]) {
 }
 
 /* ---------------- Formats ---------------- */
+const attr = (t: string) => escapeHtml(t).replace(/"/g, "&quot;");
+function mediaHtml(b: Block): string | null {
+  if (!b.src) return b.type === "image" || b.type === "video" || b.type === "audio" || b.type === "link" ? "" : null;
+  const cap = b.caption ? `<figcaption>${escapeHtml(b.caption)}</figcaption>` : "";
+  if (b.type === "image") return `<figure><img src="${attr(b.src)}" alt="${attr(b.caption ?? "")}" style="max-width:100%">${cap}</figure>`;
+  if (b.type === "video") return b.src.startsWith("http") ? `<figure><p>▶ <a href="${attr(b.src)}">${escapeHtml(b.caption || "Watch the video")}</a></p>${cap}</figure>` : `<figure><video src="${attr(b.src)}" controls style="max-width:100%"></video>${cap}</figure>`;
+  if (b.type === "audio") return `<figure><audio src="${attr(b.src)}" controls></audio>${cap}</figure>`;
+  if (b.type === "link") return `<p class="link-card">🔗 <a href="${attr(b.src)}">${escapeHtml(b.title || b.src)}</a></p>`;
+  return null;
+}
 function asMarkdown(chs: BookChapter[]) {
   const md = (html: string) => html.replace(/<(b|strong)>(.*?)<\/\1>/gi, "**$2**").replace(/<(i|em)>(.*?)<\/\1>/gi, "_$2_").replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)");
   return [`# ${BOOK_TITLE}`, "", ...chs.flatMap((c) => [`## Chapter ${c.n}. ${c.title}`, "", c.dek ? `_${c.dek}_\n` : "", ...c.blocks.map((b) => {
     const t = toText(md(b.html));
+    if (b.type === "image") return b.src?.startsWith("http") ? `![${b.caption ?? ""}](${b.src})\n` : `_[Image: ${b.caption ?? "uploaded image"}]_\n`;
+    if (b.type === "video" || b.type === "audio") return b.src?.startsWith("http") ? `[${b.caption || (b.type === "video" ? "Video" : "Audio")}](${b.src})\n` : `_[${b.type}: ${b.caption ?? "uploaded file"}]_\n`;
+    if (b.type === "link") return `[${b.title || b.src}](${b.src})\n`;
     return b.type === "h2" ? `### ${t}\n` : b.type === "quote" ? `> ${t}\n` : b.type === "note" ? `> **Memory:** ${t}\n` : `${t}\n`;
   })])].join("\n");
 }
 function asHtml(chs: BookChapter[], opts: { cover: boolean; toc: boolean }) {
-  const body = chs.map((c) => `<section class="chapter"><p class="kicker">Chapter ${c.n}</p><h1>${escapeHtml(c.title)}</h1>${c.dek ? `<p class="dek">${escapeHtml(c.dek)}</p>` : ""}${c.blocks.map((b) => b.type === "h2" ? `<h2>${b.html}</h2>` : b.type === "quote" ? `<blockquote>${b.html}</blockquote>` : b.type === "note" ? `<aside>${b.html}</aside>` : `<p>${b.html}</p>`).join("")}</section>`).join("");
+  const body = chs.map((c) => `<section class="chapter"><p class="kicker">Chapter ${c.n}</p><h1>${escapeHtml(c.title)}</h1>${c.dek ? `<p class="dek">${escapeHtml(c.dek)}</p>` : ""}${c.blocks.map((b) => mediaHtml(b) ?? (b.type === "h2" ? `<h2>${b.html}</h2>` : b.type === "quote" ? `<blockquote>${b.html}</blockquote>` : b.type === "note" ? `<aside>${b.html}</aside>` : `<p>${b.html}</p>`)).join("")}</section>`).join("");
   const cover = opts.cover ? `<section class="cover"><h1>${BOOK_TITLE}</h1><p>A biography drawn from his book, board minutes and interviews.</p></section>` : "";
   const toc = opts.toc ? `<section class="toc"><h2>Contents</h2><ol>${chs.map((c) => `<li>${escapeHtml(c.title)}</li>`).join("")}</ol></section>` : "";
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${BOOK_TITLE}</title><style>body{font-family:Georgia,serif;max-width:680px;margin:48px auto;padding:0 24px;line-height:1.7;color:#111113;font-size:19px}h1{font-size:40px;line-height:1.1;margin:0 0 12px}h2{font-size:26px;margin:36px 0 12px}.kicker{font:12px system-ui;letter-spacing:.12em;text-transform:uppercase;color:#0E5A43}.dek{font-style:italic;color:#4A4752}blockquote{border-left:2px solid #0E5A43;margin:28px 0;padding-left:20px;font-style:italic;color:#0E5A43;font-size:22px}aside{background:#E2F0E8;color:#0E5A43;padding:12px 16px;font:15px/1.6 system-ui}.chapter,.toc{page-break-before:always}.cover{min-height:80vh;display:flex;flex-direction:column;justify-content:center}a{color:#0E5A43}</style></head><body>${cover}${toc}${body}</body></html>`;
@@ -90,6 +103,8 @@ export function BookPrint({ titles, approved }: { titles: Title[]; approved: num
           <h1>{c.title}</h1>
           {c.dek && <p className="bp-dek">{c.dek}</p>}
           {c.blocks.map((b) => {
+            const media = mediaHtml(b);
+            if (media !== null) return media ? <div key={b.id} className="bp-media" dangerouslySetInnerHTML={{ __html: media }} /> : null;
             const html = { __html: b.html };
             return b.type === "h2" ? <h2 key={b.id} dangerouslySetInnerHTML={html} /> : b.type === "quote" ? <blockquote key={b.id} dangerouslySetInnerHTML={html} /> : b.type === "note" ? <aside key={b.id} dangerouslySetInnerHTML={html} /> : <p key={b.id} dangerouslySetInnerHTML={html} />;
           })}
