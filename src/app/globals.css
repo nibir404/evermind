@@ -972,8 +972,21 @@ img,video { max-width:100%; }
 /* Tab bar legibility: stronger frost so content behind never competes with the labels. */
 @media (max-width: 767px) {
   .tabbar {
-    background: linear-gradient(180deg, rgba(250,250,250,.86), rgba(244,244,242,.78)) !important;
+    background: linear-gradient(180deg, rgba(250,250,250,.82), rgba(244,244,242,.74)) !important;
     backdrop-filter: blur(40px) saturate(180%) brightness(1.06) !important;
     -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.06) !important;
   }
+}
+
+/* Backdrop blur, written through variables so the CSS compiler keeps the
+   unprefixed property (it otherwise outputs only -webkit-, which Chrome ignores). */
+:root { --blur-s: blur(8px); --blur-m: blur(20px) saturate(180%); --blur-l: blur(40px) saturate(180%) brightness(1.04); }
+.glass, .home-callout-body, .book-media-replace, .spot-backdrop { backdrop-filter: var(--blur-s); -webkit-backdrop-filter: var(--blur-s); }
+.glass, .spot, .demo-toast, .chat-drawer, .glass-liquid { backdrop-filter: var(--blur-m); -webkit-backdrop-filter: var(--blur-m); }
+.demo-dialog::backdrop { backdrop-filter: var(--blur-s); -webkit-backdrop-filter: var(--blur-s); }
+@media (max-width: 767px) {
+  .tabbar, .sheet, .demo-dialog, .spot { backdrop-filter: var(--blur-l) !important; -webkit-backdrop-filter: var(--blur-l) !important; }
+}
+@media (max-width: 767px) and (prefers-reduced-transparency: reduce) {
+  .tabbar, .sheet, .demo-dialog, .spot { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 }

@@ -49,9 +49,22 @@ export const viewport: Viewport = {
   width: "device-width", initialScale: 1, viewportFit: "cover", interactiveWidget: "resizes-content",
 };
 
+/* The CSS pipeline rewrites backdrop-filter to only its -webkit- form, which Chrome
+   and Android ignore. These rules ship unprocessed so frosted surfaces blur everywhere. */
+const backdropCss = `
+.glass,.home-callout-body,.book-media-replace,.spot-backdrop{backdrop-filter:blur(8px)}
+.spot,.demo-toast,.chat-drawer,.glass-liquid{backdrop-filter:blur(20px) saturate(180%)}
+.demo-dialog::backdrop{backdrop-filter:blur(8px)}
+@media (max-width:767px){.tabbar,.sheet,.demo-dialog,.spot{backdrop-filter:blur(40px) saturate(180%) brightness(1.04)!important}}
+@media (max-width:767px) and (prefers-reduced-transparency:reduce){.tabbar,.sheet,.demo-dialog,.spot{backdrop-filter:none!important}}
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${newsreader.variable} antialiased`}>
+      <head>
+        <style id="backdrop-blur" dangerouslySetInnerHTML={{ __html: backdropCss }} />
+      </head>
       <body className="min-h-dvh bg-canvas text-ink">
         <SmoothScroll>{children}</SmoothScroll><DemoNotice />
       </body>
