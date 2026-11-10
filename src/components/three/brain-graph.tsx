@@ -3,7 +3,7 @@
 // Three.js knowledge brain — neurons coloured by type, matching Paper 05.08.
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 export type NeuronType = "principle" | "decision" | "memory" | "person" | "source";
@@ -46,9 +46,23 @@ function buildField(n: number) {
   return pts;
 }
 
-function Field({ labels, selected, onSelect }: { labels: (Neuron & { at: number })[]; selected?: string; onSelect: (id: string) => void }) {
+type FieldProps = {
+  /** Pinned, always-visible labels. */
+  labels: (Neuron & { at: number })[];
+  /** One record per dot, index-aligned with the field. Every dot is hoverable and clickable. */
+  nodes?: (Neuron | undefined)[];
+  /** Ids that match the current filter/search; others dim. */
+  visible?: Set<string>;
+  selected?: string;
+  onSelect: (id: string) => void;
+};
+
+function Field({ labels, nodes, visible, selected, onSelect }: FieldProps) {
   const group = useRef<THREE.Group>(null);
-  const field = useMemo(() => buildField(140), []);
+  const [hover, setHover] = useState<number | null>(null);
+  // Select on press + release without dragging. R3F onClick can be swallowed by OrbitControls.
+  const press = useRef<{ id: string; x: number; y: number } | null>(null);
+  const field = useMemo(() => buildField(nodes?.length || 140), [nodes?.length]);
   const dust = useMemo(() => {
     const arr: number[] = [];
     for (let i = 0; i < 900; i++) {
@@ -70,10 +84,13 @@ function Field({ labels, selected, onSelect }: { labels: (Neuron & { at: number 
     });
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, [field]);
-  const sel = labels.find((l) => l.id === selected);
+  const selIndex = useMemo(() => {
+    const i = nodes ? nodes.findIndex((n) => n?.id === selected) : -1;
+    return i >= 0 ? i : labels.find((l) => l.id === selected)?.at ?? -1;
+  }, [nodes, labels, selected]);
   const selEdges = useMemo(() => {
-    if (!sel) return null;
-    const a = field[sel.at].p;
+    if (selIndex < 0 || !field[selIndex]) return null;
+    const a = field[selIndex].p;
     const pts: THREE.Vector3[] = [];
     field
       .map((f) => f.p)
@@ -81,11 +98,11 @@ function Field({ labels, selected, onSelect }: { labels: (Neuron & { at: number 
       .slice(1, 8)
       .forEach((b) => pts.push(a, b));
     return new THREE.BufferGeometry().setFromPoints(pts);
-  }, [sel, field]);
+  }, [selIndex, field]);
 
   useFrame(({ clock }, dt) => {
     if (group.current) {
-      group.current.rotation.y += dt * 0.04;
+      if (hover === null) group.current.rotation.y += dt * 0.04; // hold still while you inspect a dot
       group.current.position.y = Math.sin(clock.elapsedTime * 0.5) * 0.04;
     }
   });
@@ -107,21 +124,32 @@ function Field({ labels, selected, onSelect }: { labels: (Neuron & { at: number 
         </lineSegments>
       )}
       {field.map((f, i) => {
-        const lab = labels.find((l) => l.at === i);
-        const active = lab && lab.id === selected;
+        const pin = labels.find((l) => l.at === i);
+        const node = nodes?.[i] ?? pin;
+        const lab = pin;
+        const active = !!node && node.id === selected;
+        const hovered = hover === i;
+        const dim = !!visible && !!node && !visible.has(node.id);
+        const r = active ? 0.09 : hovered ? f.s * 1.8 : f.s;
         return (
           <group key={i} position={f.p}>
+            {/* Invisible, larger hit area so small dots are easy to catch */}
             <mesh
-              onClick={lab ? (e) => (e.stopPropagation(), onSelect(lab.id)) : undefined}
-              onPointerOver={lab ? () => (document.body.style.cursor = "pointer") : undefined}
-              onPointerOut={() => (document.body.style.cursor = "")}
+              onPointerDown={node ? (e) => { press.current = { id: node.id, x: e.clientX, y: e.clientY }; } : undefined}
+              onPointerUp={node ? (e) => { const p = press.current; press.current = null; if (p && p.id === node.id && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6) { e.stopPropagation(); onSelect(node.id); } } : undefined}
+              onPointerOver={node ? (e) => { e.stopPropagation(); setHover(i); document.body.style.cursor = "pointer"; } : undefined}
+              onPointerOut={() => { setHover((h) => (h === i ? null : h)); document.body.style.cursor = ""; }}
             >
-              <sphereGeometry args={[active ? 0.09 : f.s, 16, 16]} />
-              <meshBasicMaterial color={typeColor[f.t]} />
+              <sphereGeometry args={[Math.max(0.07, r * 2.2), 8, 8]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
             <mesh>
-              <sphereGeometry args={[(active ? 0.09 : f.s) * 2.2, 16, 16]} />
-              <meshBasicMaterial color={typeColor[f.t]} transparent opacity={active ? 0.22 : 0.07} depthWrite={false} />
+              <sphereGeometry args={[r, 16, 16]} />
+              <meshBasicMaterial color={typeColor[f.t]} transparent opacity={dim ? 0.18 : 1} />
+            </mesh>
+            <mesh>
+              <sphereGeometry args={[r * 2.2, 16, 16]} />
+              <meshBasicMaterial color={typeColor[f.t]} transparent opacity={dim ? 0.02 : active || hovered ? 0.22 : 0.07} depthWrite={false} />
             </mesh>
             {active && (
               <mesh rotation={[0, 0, 0]}>
@@ -137,7 +165,7 @@ function Field({ labels, selected, onSelect }: { labels: (Neuron & { at: number 
                     <div style={{ fontSize: 10, letterSpacing: "0.08em", color: "#0E5A43" }}>{lab.type.toUpperCase()} · SELECTED</div>
                   </div>
                 ) : (
-                  <div style={{ border: `1px solid ${typeColor[lab.type]}66`, background: "#0E2E25CC", color: lab.type === "person" ? "#E9A23B" : "#DDEFE4", borderRadius: 4, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap", fontFamily: "system-ui", transform: "translateY(-50%)" }}>
+                  <div style={{ opacity: dim ? 0.3 : 1, border: `1px solid ${typeColor[lab.type]}66`, background: "#0E2E25CC", color: lab.type === "person" ? "#E9A23B" : "#DDEFE4", borderRadius: 4, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap", fontFamily: "system-ui", transform: "translateY(-50%)" }}>
                     {lab.label} · {lab.type[0].toUpperCase() + lab.type.slice(1)}
                   </div>
                 )}
@@ -146,11 +174,26 @@ function Field({ labels, selected, onSelect }: { labels: (Neuron & { at: number 
           </group>
         );
       })}
+      {/* One tooltip, always mounted, follows the hovered or selected dot (mounting drei Html per dot races React). */}
+      {(() => {
+        const at = hover ?? (selIndex >= 0 && !labels.some((l) => l.at === selIndex) ? selIndex : null);
+        const n = at !== null ? nodes?.[at] : undefined;
+        const p = at !== null ? field[at]?.p : undefined;
+        const isSel = n?.id === selected;
+        return (
+          <Html position={p ? [p.x + 0.12, p.y, p.z] : [0, 0, -999]} style={{ pointerEvents: "none" }} zIndexRange={[20, 10]}>
+            <div style={{ visibility: n ? "visible" : "hidden", background: isSel ? "#D4F26A" : "#FFFFFF", color: "#111113", borderRadius: 4, padding: "6px 10px", whiteSpace: "nowrap", fontFamily: "system-ui", transform: "translateY(-50%)", boxShadow: "0 8px 24px rgba(0,0,0,.35)" }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{n?.label}</div>
+              <div style={{ fontSize: 11, color: isSel ? "#0E5A43" : "#4A4752" }}>{n ? `${n.type[0].toUpperCase() + n.type.slice(1)}${isSel ? " · selected" : " · click to open"}` : ""}</div>
+            </div>
+          </Html>
+        );
+      })()}
     </group>
   );
 }
 
-export default function BrainGraph(props: { labels: (Neuron & { at: number })[]; selected?: string; onSelect: (id: string) => void; zoom?: number }) {
+export default function BrainGraph(props: FieldProps & { zoom?: number }) {
   return (
     <Canvas camera={{ position: [0, 0, 6.2 / (props.zoom ?? 1)], fov: 42 }} dpr={[1, 2]}>
       <Field {...props} />

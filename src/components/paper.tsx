@@ -111,12 +111,13 @@ export function Row({ children, style }: { children: React.ReactNode; style?: Re
   );
 }
 
-export function PageHead({ eyebrow, title, actions }: { eyebrow: string; title: string; actions?: React.ReactNode }) {
+export function PageHead({ eyebrow, title, sub, actions }: { eyebrow: string; title: string; sub?: string; actions?: React.ReactNode }) {
   return (
     <div className="paper-page-head" style={{ alignItems: "end", display: "flex", justifyContent: "space-between" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <div style={{ color: C.ink, fontSize: 40, fontWeight: 500, letterSpacing: "-0.035em", lineHeight: "48px" }}>{title}</div>
+        {sub && <p className="page-sub" style={{ marginTop: 2 }}>{sub}</p>}
       </div>
       {actions && <div style={{ alignItems: "center", display: "flex", gap: 8 }}>{actions}</div>}
     </div>

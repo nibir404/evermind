@@ -6,32 +6,37 @@ import { Badge, C, Page, PageHead, PButton, PCard } from "./paper";
 import { Field, Modal, Empty } from "./demo-ui";
 import { audit, download, moduleSeeds, moduleTitles, notify, useDemo, type RecordItem, addRecord } from "@/lib/demo";
 
+const fmt = (d: string, long = false) => { const t = new Date(d + "T00:00:00"); return isNaN(t.getTime()) ? d : t.toLocaleDateString("en-GB", long ? { weekday: "short", day: "numeric", month: "long", year: "numeric" } : { day: "numeric", month: "short" }); };
+
 export function ModuleWorkspace({ module, initialCreate = false }: { module: string; initialCreate?: boolean }) {
   const [items, setItems] = useDemo<RecordItem[]>(module, moduleSeeds[module] ?? []);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
-  const [selected, setSelected] = useState<string | null>(null);
+  const [picked, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<RecordItem | null>(initialCreate ? blank() : null);
   const [removing, setRemoving] = useState<RecordItem | null>(null);
   const [live, setLive] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [eyebrow, title, sub] = moduleTitles[module] ?? ["EverMind", module, ""];
   function blank(): RecordItem { return { id: "", title: "", body: "", category: "General", status: module === "knowledge" ? "Ready" : "Draft", date: "2026-11-10", source: module === "access" ? "" : "Added by you" }; }
-  const detail = items.find(r => r.id === selected);
+  const statusCount = (st: string) => items.filter(r => r.status === st).length;
   const statuses = [...new Set(items.map(r => r.status))];
   const list = items.filter(r => (filter === "All" || r.status === filter) && `${r.title} ${r.body} ${r.category}`.toLowerCase().includes(query.toLowerCase()));
+  // Like Mail: something is always open. Falls back to the first visible record.
+  const selected = picked && list.some(r => r.id === picked) ? picked : list[0]?.id ?? null;
+  const detail = items.find(r => r.id === selected);
+  const move = (dir: 1 | -1) => { const i = list.findIndex(r => r.id === selected); const next = list[Math.min(list.length - 1, Math.max(0, i + dir))]; if (next) { setSelected(next.id); setLive(false); } };
   const update = (item: RecordItem, status: string) => { setItems(xs => xs.map(x => x.id === item.id ? { ...x, status } : x)); audit(`${item.title}: ${status}`, module); notify(`${status} · saved in this demo`); };
   function save(e: React.FormEvent) { e.preventDefault(); if (!editing?.title.trim() || !editing.body.trim()) return; const item = { ...editing, title: editing.title.trim(), id: editing.id || crypto.randomUUID() }; setItems(xs => editing.id ? xs.map(x => x.id === item.id ? item : x) : [item, ...xs]); audit(`${editing.id ? "Updated" : "Created"} ${item.title}`, module); setSelected(item.id); setEditing(null); notify("Record saved"); }
   function requestApproval(item: RecordItem) { if(item.status === "Awaiting approval") return notify("This record is already awaiting approval."); addRecord("approval-queue", { ...item, id: crypto.randomUUID(), status: "Pending", category: module, owner: item.id }); update(item, "Awaiting approval"); }
   return <Page>
-    <PageHead eyebrow={eyebrow} title={title} actions={<><PButton onClick={() => download(`${module}.json`, items)}><Download size={15}/>Export</PButton><PButton variant="ink" onClick={() => setEditing(blank())}><Plus size={15}/>{module === "boardroom" ? "Set up meeting" : module === "access" ? "Invite stakeholder" : module === "knowledge" ? "Add source" : "Add record"}</PButton></>}/>
-    <p style={{ color: C.slate, marginTop: -8 }}>{sub}</p>
-    <div className="demo-toolbar"><label className="demo-search"><Search size={16}/><input aria-label={`Search ${module}`} placeholder={`Search ${module}…`} value={query} onChange={e => setQuery(e.target.value)}/></label><select aria-label="Filter status" value={filter} onChange={e => setFilter(e.target.value)}><option>All</option>{statuses.map(s => <option key={s}>{s}</option>)}</select><span className="demo-muted">{list.length} records · local demo</span></div>
-    <div className="demo-module-grid"><PCard style={{ padding: 20 }}>
+    <PageHead eyebrow={eyebrow} title={title} sub={sub} actions={<><PButton onClick={() => download(`${module}.json`, items)}><Download size={15}/>Export</PButton><PButton variant="ink" onClick={() => setEditing(blank())}><Plus size={15}/>{module === "boardroom" ? "Set up meeting" : module === "access" ? "Invite stakeholder" : module === "knowledge" ? "Add source" : "Add record"}</PButton></>}/>
+    <div className="demo-toolbar"><label className="demo-search"><Search size={16}/><input aria-label={`Search ${module}`} placeholder={`Search ${module}…`} value={query} onChange={e => setQuery(e.target.value)}/></label><div className="seg" role="group" aria-label="Filter by status">{["All", ...statuses].map(st => <button key={st} type="button" aria-pressed={filter === st} onClick={() => setFilter(st)}>{st}<small>{st === "All" ? items.length : statusCount(st)}</small></button>)}</div><span className="demo-muted">{list.length} of {items.length}</span></div>
+    <div className="demo-module-grid"><PCard dither={false} className="list-pane" style={{ padding: 6 }}><div role="listbox" aria-label={title} tabIndex={0} onKeyDown={e => { if (e.key === "ArrowDown") { e.preventDefault(); move(1); } if (e.key === "ArrowUp") { e.preventDefault(); move(-1); } }} style={{ outline: "none" }}>
       {!list.length && <Empty body={query ? "Try a different search or status filter." : "Create your first record using Add record."}/>}
-      {list.map(item => <button key={item.id} className={`demo-record ${selected === item.id ? "selected" : ""}`} onClick={() => { setSelected(item.id); setLive(false); }}><span className="demo-record-date">{item.date}<small>{item.category}</small></span><span style={{ flex: 1, minWidth: 0 }}><strong>{item.title}</strong><p>{item.body.split("\n")[0]}</p></span><Badge kind={item.status}/><ArrowUpRight size={16}/></button>)}
-    </PCard><PCard style={{ padding: 24, gap: 18 }}>
-      {detail ? <><span className="demo-kicker">Record detail</span><h2 className="demo-h2">{detail.title}</h2><Badge kind={detail.status}/><p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{detail.body}</p><p className="demo-muted">{detail.source} · {detail.date}</p><div className="demo-actions"><PButton onClick={() => setEditing({ ...detail })}><Pencil size={14}/>Edit</PButton><PButton onClick={() => setRemoving(detail)}><Trash2 size={14}/>Remove</PButton></div>
+      {list.map(item => <button key={item.id} role="option" aria-selected={selected === item.id} tabIndex={-1} className={`demo-record ${selected === item.id ? "selected" : ""}`} onClick={() => { setSelected(item.id); setLive(false); }}><span className="demo-record-date">{fmt(item.date)}<small>{item.category}</small></span><span style={{ flex: 1, minWidth: 0 }}><strong>{item.title}</strong><p>{item.body.split("\n")[0]}</p></span><Badge kind={item.status}/><ArrowUpRight size={16} color={C.faint}/></button>)}
+    </div></PCard><PCard dither={false} className="detail-pane" style={{ padding: 28, gap: 16 }}>
+      {detail ? <><div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}><h2 className="demo-h2">{detail.title}</h2><Badge kind={detail.status}/></div><div className="detail-meta"><span>{fmt(detail.date, true)}</span><span>{detail.category}</span>{detail.source && <span>{detail.source}</span>}</div><p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 15 }}>{detail.body}</p><div className="detail-actions"><PButton onClick={() => setEditing({ ...detail })}><Pencil size={14}/>Edit</PButton><PButton onClick={() => setRemoving(detail)}><Trash2 size={14}/>Remove</PButton></div>
       {module === "tasks" && <PButton variant="lime" onClick={() => update(detail, detail.status === "Completed" ? "Open" : "Completed")}><Check size={15}/>{detail.status === "Completed" ? "Reopen task" : "Complete task"}</PButton>}
       {module === "knowledge" && <><PButton href="/memories">Review memories</PButton><PButton variant="lime" onClick={() => update(detail, "Reviewed")}>Confirm source</PButton></>}
       {module === "decisions" && <><PButton href="/decide">Open analysis</PButton><PButton variant="lime" onClick={() => update(detail, "Recorded")}>Record decision</PButton><PButton onClick={() => setEditing({ ...detail, status: "Outcome reviewed", body: detail.body + "\n\nOutcome review: " })}>Review outcome</PButton></>}

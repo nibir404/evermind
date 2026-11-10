@@ -1,5 +1,5 @@
 "use client";
-import { download, useDemo, type AuditEvent } from "@/lib/demo";
+import { download, useDemo, type AuditEvent, auditSeed } from "@/lib/demo";
 
 // 1:1 port of Paper "03.02 · Activity center" (5GR-0)
 import { useState } from "react";
@@ -38,7 +38,7 @@ function Heatmap() {
 export default function Activity() {
   const [f, setF] = useState(counts[0]);
   const [sel, setSel] = useState("e1");
-  const [query,setQuery]=useState("");const [logs]=useDemo<AuditEvent[]>("audit",[]);
+  const [query,setQuery]=useState("");const [logs]=useDemo<AuditEvent[]>("audit",auditSeed);
   const live:Ev[]=logs.map(x=>({id:x.id,day:"Today",time:new Date(x.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}),title:x.title,meta:`Local demo · ${x.kind}`,status:"Recorded",color:C.pine,kind:x.kind,detail:[["Time",x.time],["Module",x.kind],["Storage","This browser"]]}));
   const all=[...live,...events];const list=all.filter(e=>(f.startsWith("All")||f.startsWith(e.kind))&&(e.title+e.meta).toLowerCase().includes(query.toLowerCase()));
   const ev = all.find((e) => e.id === sel) ?? events[0];

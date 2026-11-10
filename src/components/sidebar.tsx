@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ProfileAvatar } from "./workspace-hub";
+import { openSpotlight } from "./spotlight";
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
@@ -95,7 +96,11 @@ export function Sidebar() {
         <Link href="/home" aria-label="EverMind" className="app-sidebar-logo">
           <Logo />
         </Link>
-        <div className="app-sidebar-logo" style={{ height: 14 }} />
+        <button onClick={openSpotlight} aria-label="Search everything (⌘K)" title="Search everything  ⌘K" className="group relative grid place-items-center rounded-[4px] hover:bg-[#F1F1EE]" style={{ width: 40, height: 40, color: "#4A4752", marginTop: 6 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" {...stroke} /><path d="M20 20l-3.5-3.5" {...stroke} /></svg>
+          <span className="pointer-events-none absolute left-12 z-50 whitespace-nowrap rounded-[4px] bg-[#111113] px-2 py-1 text-[12px] text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">Search  ⌘K</span>
+        </button>
+        <div className="app-sidebar-logo" style={{ height: 1, width: 24, background: "#E9E8E4", margin: "4px 0" }} />
         {nav.map((n) => (
           <Item key={n.href} {...n} active={path.startsWith(n.href)} />
         ))}
