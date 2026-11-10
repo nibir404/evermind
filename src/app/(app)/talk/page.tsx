@@ -8,22 +8,18 @@ const TwinAvatar = dynamic(() => import("@/components/twin-avatar"), {
   ssr: false,
   loading: () => <div className="demo-note">Loading 3D avatar…</div>,
 });
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ChevronLeft,
   Mic,
-  Captions,
   X,
   RotateCw,
   RotateCcw,
   ZoomIn,
   ZoomOut,
-  ShieldCheck,
-  UserRound,
-  CircleHelp,
   Scale,
 } from "lucide-react";
-import { useDemo, answerDemo, addRecord, preferenceSeed, profileSeed, notify } from "@/lib/demo";
+import { useDemo, answerDemo, addRecord, preferenceSeed, profileSeed, notify, moduleSeeds, type RecordItem } from "@/lib/demo";
 import { C } from "@/components/paper";
 import { ease } from "@/components/ui";
 
@@ -51,8 +47,9 @@ export default function Talk() {
   const [prefs] = useDemo("preferences", preferenceSeed);
   const [profile] = useDemo("profile", profileSeed);
   const [showSources, setShowSources] = useState(true);
+  const [calendar] = useDemo<RecordItem[]>("calendar", moduleSeeds.calendar ?? []);
+  const upcoming = [...calendar].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
   const [state, setState] = useState<State>("speaking");
-  const [captions, setCaptions] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [angle, setAngle] = useState(0);
   const [reset, setReset] = useState(0);
@@ -184,16 +181,10 @@ export default function Talk() {
       </div>
       <div className="talk-top-actions" style={{ position: "absolute", right: 24, top: 28, display: "flex", gap: 8 }}>
         <button
-          onClick={() => setCaptions((c) => !c)}
-          style={{ ...glass, background: captions ? "#FFFFFF1F" : "#FFFFFF0A", padding: "8px 12px", fontSize: 13 }}
-        >
-          Captions
-        </button>
-        <button
           onClick={() => setShowSources(!showSources)}
           style={{ background: "#fff", color: C.ink, borderRadius: 4, padding: "8px 12px", fontSize: 13, fontWeight: 500 }}
         >
-          Sources · 3
+          Upcoming · 3
         </button>
       </div>
       <div
@@ -225,22 +216,21 @@ export default function Talk() {
         <TwinAvatar speaking={state === "speaking"} zoom={zoom} angle={angle} reset={reset} />
       </div>
 
-      {/* View controls on right */}
+      {/* View controls, bottom right */}
       <div
         className="talk-zoom"
         style={{
           ...glass,
           position: "absolute",
-          left: "calc(50% + 290px)",
-          top: "46%",
-          transform: "translateY(-50%)",
-          width: 50,
-          padding: "10px 6px",
+          right: 48,
+          bottom: 36,
+          height: 52,
+          padding: "0 7px",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "center",
-          gap: 8,
-          zIndex: 20,
+          gap: 4,
+          zIndex: 30,
         }}
       >
         <button
@@ -248,7 +238,7 @@ export default function Talk() {
           title="Reset to front view"
           aria-label="Front view"
           className="transition hover:brightness-95 active:scale-95"
-          style={{ width: 38, height: 38, borderRadius: 4, background: C.lime, color: C.ink, display: "grid", placeItems: "center", fontSize: 11, fontWeight: 700 }}
+          style={{ height: 38, padding: "0 12px", borderRadius: 4, background: C.lime, color: C.ink, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700 }}
         >
           Front
         </button>
@@ -270,7 +260,7 @@ export default function Talk() {
         >
           <RotateCw size={16} />
         </button>
-        <div style={{ width: 26, height: 1, background: "rgba(255,255,255,0.18)", margin: "2px 0" }} />
+        <div style={{ width: 1, height: 26, background: "rgba(255,255,255,0.18)", margin: "0 4px" }} />
         <button
           onClick={() => setZoom((z) => Math.min(1.4, z + 0.1))}
           title="Zoom in"
@@ -289,26 +279,36 @@ export default function Talk() {
         </button>
       </div>
 
-      {/* Sources */}
+      {/* Upcoming events */}
       <div
         className="talk-sources"
         hidden={!showSources}
-        style={{ position: "absolute", right: 48, top: 218, width: 280, display: showSources ? "flex" : "none", flexDirection: "column", gap: 12 }}
+        style={{ position: "absolute", right: 48, top: 218, width: 280, display: showSources ? "flex" : "none", flexDirection: "column", gap: 10 }}
       >
-        <motion.div initial={{ opacity: 0, rotate: -1, y: 10 }} animate={{ opacity: 1, rotate: -1, y: 0 }} transition={{ delay: 0.5, duration: 0.6, ease }} style={{ background: "#fff", color: C.ink, borderRadius: 4, padding: 14, boxShadow: "0 20px 40px -20px rgba(0,0,0,.5)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, fontWeight: 600 }}>
-            <span style={{ display: "flex", gap: 8, alignItems: "center" }}><ShieldCheck size={14} color={C.pine} /> Your book, 2025</span>
-            <span style={{ color: C.slate, fontWeight: 400, fontSize: 12 }}>p. 42</span>
-          </div>
-          <div style={{ marginTop: 12, height: 3, background: "#E9E8E4", borderRadius: 4 }} />
-          <div style={{ marginTop: 6, height: 6, width: "70%", background: "#CDEE8C", borderRadius: 4 }} />
-          <div style={{ marginTop: 6, height: 3, width: "55%", background: "#E9E8E4", borderRadius: 4 }} />
-        </motion.div>
-        <div style={{ ...glass, padding: "12px 14px", fontSize: 13, display: "flex", gap: 8, alignItems: "center" }}><UserRound size={14} color="#8FD8B0" /> Interview · partnerships</div>
-        <div style={{ border: "1px solid #FFFFFF33", borderRadius: 4, padding: "12px 14px", fontSize: 13, display: "flex", gap: 8, alignItems: "center", color: "#FFFFFFCC" }}><CircleHelp size={14} /> Faculty capacity · unknown</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.12em", color: "#8FD8B0" }}>UPCOMING</span>
+          <Link href="/calendar" style={{ fontSize: 13, color: "#FFFFFFCC", textDecoration: "underline", textUnderlineOffset: 3 }}>See all</Link>
+        </div>
+        {upcoming.map((e, i) => (
+          <motion.div
+            key={e.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + i * 0.1, duration: 0.5, ease }}
+            style={i === 0
+              ? { background: "#fff", color: C.ink, borderRadius: 4, padding: 14 }
+              : { ...glass, padding: "12px 14px" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 12, color: i === 0 ? C.slate : "#FFFFFFB3" }}>
+              <span>{new Date(e.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · {e.body.split(" · ")[0]}</span>
+              <span>{e.category}</span>
+            </div>
+            <div style={{ marginTop: 6, fontSize: 14, fontWeight: i === 0 ? 600 : 500, lineHeight: "19px" }}>{e.title}</div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Caption + controls */}
+      {/* Controls */}
       <div
         className="talk-controls"
         style={{
@@ -324,33 +324,6 @@ export default function Talk() {
           pointerEvents: "auto",
         }}
       >
-        <AnimatePresence mode="wait">
-          {captions && (
-            <motion.div
-              key={state === "thinking" ? "thinking" : transcript.at(-1)?.text}
-              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, filter: "blur(6px)" }}
-              transition={{ duration: 0.4, ease }}
-              style={{
-                maxWidth: "min(840px, 90vw)",
-                fontSize: 22,
-                fontWeight: 500,
-                letterSpacing: "-0.02em",
-                lineHeight: "32px",
-                textAlign: "center",
-                textShadow: "0 2px 20px rgba(0,0,0,0.7)",
-                color: state === "thinking" ? "#D4F26A" : "#FFFFFF",
-                padding: "0 20px",
-              }}
-            >
-              {state === "thinking"
-                ? "Checking your book and interviews…"
-                : (transcript.at(-1)?.text ?? "Tap the microphone to speak with your twin.")}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <motion.button
             whileTap={{ scale: 0.94 }}
@@ -370,22 +343,6 @@ export default function Talk() {
             }}
           >
             <Mic size={20} className={isListening ? "animate-pulse" : ""} />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={() => setCaptions((c) => !c)}
-            aria-label="Toggle captions"
-            title={captions ? "Hide captions" : "Show captions"}
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 4,
-              background: captions ? "#FFFFFF2E" : "#FFFFFF14",
-              display: "grid",
-              placeItems: "center",
-            }}
-          >
-            <Captions size={20} />
           </motion.button>
           <button
             onClick={() => {
