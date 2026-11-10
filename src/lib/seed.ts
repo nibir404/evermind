@@ -160,3 +160,46 @@ export const autonomyLevels = [
   { level: "L3", name: "Act within limits", desc: "Only where you allow", on: false },
   { level: "L4", name: "Legal & financial", desc: "Always you. Never the twin.", locked: true, on: false, danger: true },
 ];
+
+/** Sample text for the other chapters, so the whole book can be read, exported and shared. */
+export const chapterSeeds: Record<number, { dek: string; paragraphs: string[] }> = {
+  1: {
+    dek: "A rented floor in Dhanmondi, six hundred students, and a promise that they would be employable.",
+    paragraphs: [
+      "He started with rented floors and borrowed furniture. The first intake was six hundred students, most of them the first in their families to attend university.",
+      "From the start he measured one thing above the rest: whether graduates found work. Every course, every hire and every partnership was judged against it.",
+      "Colleagues from those years remember long evenings and short meetings. He wanted decisions written down, owners named, and the next step agreed before anyone went home.",
+    ],
+  },
+  2: {
+    dek: "An expansion he loved nearly sank the group. The lesson on debt has shaped every decision since.",
+    paragraphs: [
+      "In 2008 he pushed for a fast expansion. The idea was right; the financing was not. When enrolment slowed, the debt did not.",
+      "He spent the next two years paying it down, campus by campus. He has not financed an expansion beyond thirty percent debt since.",
+      "He tells the story to young founders without softening it. Bold about education, careful about debt, he says, and never the other way round.",
+    ],
+  },
+  4: {
+    dek: "Students first, employability as the measure, and nothing impossible.",
+    paragraphs: [
+      "When a choice is close, he picks the option that helps students most, even when it costs the institution in the short run.",
+      "He believes a university is judged by what its graduates do in their first year of work, not by its buildings.",
+      "And he believes, stubbornly, that there is nothing impossible. He says it at every convocation, and he means it as an instruction.",
+    ],
+  },
+  5: {
+    dek: "He remembers who brought him the bad news early.",
+    paragraphs: [
+      "Prof. Rahman has been at his side on international partnerships for more than a decade. They disagree often and decide together.",
+      "He trusts operators more than plans. A good plan with the wrong operator, he says, is a bad plan.",
+      "He gives the quietest person in the room time to speak, and he remembers who was brave enough to bring him bad news early.",
+    ],
+  },
+  6: {
+    dek: "Institutions that outlast their founders.",
+    paragraphs: [
+      "He wants to build institutions that run well without him, with values written down and people trusted to apply them.",
+      "This book, and the twin that learned from it, are part of that. Both are meant to carry his reasoning forward, never to replace the people who decide.",
+    ],
+  },
+};

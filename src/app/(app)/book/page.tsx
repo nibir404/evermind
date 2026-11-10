@@ -23,7 +23,9 @@ import {
   Copy,
   Trash2,
 } from "lucide-react";
-import { chapterThree, chapters } from "@/lib/seed";
+import { chapterThree, chapters, chapterSeeds } from "@/lib/seed";
+import { BookPublish, BookPrint, bookChapters } from "@/components/book-publish";
+import { BookOpen, Share2, Upload } from "lucide-react";
 import { ease } from "@/components/ui";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -32,8 +34,10 @@ export default function Book() {
   const [editing, setEditing] = useState(false);
   const [chapter,setChapter] = useDemo("book-chapter",3);
   const [titles,setTitles] = useDemo("book-titles",chapters);
-  const ch = {...chapterThree, title:titles.find(c=>c.n===chapter)?.title??chapterThree.title, kicker:`Chapter ${chapter}`};
-  const [legacyParas] = useDemo<string[]>("book-paragraphs:"+chapter,()=>chapter===3?chapterThree.paragraphs:[`This chapter explores ${ch.title.toLowerCase()} through the experiences and values recorded in the seeded source library.`,"Add a memory or write a paragraph to develop this chapter."]);
+  const ch = {...chapterThree, dek: chapter===3 ? chapterThree.dek : chapterSeeds[chapter]?.dek ?? "A new chapter, drawn from your sources.", title:titles.find(c=>c.n===chapter)?.title??chapterThree.title, kicker:`Chapter ${chapter}`};
+  const [legacyParas] = useDemo<string[]>("book-paragraphs:"+chapter,()=>chapter===3?chapterThree.paragraphs:chapterSeeds[chapter]?.paragraphs ?? [`This chapter explores ${ch.title.toLowerCase()} through the experiences and values recorded in the seeded source library.`,"Add a memory or write a paragraph to develop this chapter."]);
+  const [showToc,setShowToc] = useState(true);
+  const [sheet,setSheet] = useState<null|"publish"|"share">(null);
   const [blocks,setBlocks] = useDemo<Block[]>("book-blocks:"+chapter,()=>legacyParas.map((t,i)=>({id:`b${chapter}-${i}`,type:"p",html:escapeHtml(t)})));
   const [comments,setComments] = useDemo<BookComment[]>("book-comments:"+chapter,[]);
   const [dragId,setDragId] = useState<string|null>(null);
@@ -93,7 +97,10 @@ export default function Book() {
             )}
           </AnimatePresence>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowToc((v) => !v)} aria-pressed={showToc} className="hidden h-9 items-center gap-2 rounded-[4px] bg-white px-3 text-[13px] shadow-soft transition active:scale-95 lg:inline-flex"><BookOpen size={14} strokeWidth={1.8} />Contents</button>
+          <button onClick={() => setSheet("share")} className="inline-flex h-9 items-center gap-2 rounded-[4px] bg-white px-3 text-[13px] shadow-soft transition active:scale-95"><Share2 size={14} strokeWidth={1.8} />Share</button>
+          <button onClick={() => setSheet("publish")} className="inline-flex h-9 items-center gap-2 rounded-[4px] bg-white px-3 text-[13px] shadow-soft transition active:scale-95"><Upload size={14} strokeWidth={1.8} />Publish</button>
           <button
             onClick={() => setEditing((e) => !e)}
             className="inline-flex h-9 items-center gap-2 rounded-[4px] bg-white px-3 text-[13px] shadow-soft transition active:scale-95"
@@ -109,7 +116,7 @@ export default function Book() {
       <div className="flex">
         {/* Chapters — Notion-like */}
         <AnimatePresence>
-          {editing && (
+          {showToc && (
             <motion.aside
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 260, opacity: 1 }}
@@ -117,15 +124,23 @@ export default function Book() {
               transition={{ duration: 0.5, ease }}
               className="sticky top-16 hidden h-[calc(100dvh-64px)] shrink-0 overflow-hidden border-r border-line lg:block"
             >
-              <div className="w-[260px] p-4">
-                {titles.map((c) => (
-                  <button onClick={()=>setChapter(c.n)} key={c.n} className={`flex items-center justify-between rounded-[4px] px-3 py-2 text-[14px] ${c.n === chapter ? "bg-pine-wash font-semibold text-pine" : "text-slate hover:bg-white"}`}>
-                    <span className="truncate">{c.n} · {c.title}</span>
-                    {approved.includes(c.n) && <Check size={13} className="text-success" />}
+              <nav aria-label="Chapters" className="w-[260px] p-4">
+                <div className="mb-3 flex items-baseline justify-between px-3">
+                  <span className="text-[12px] font-semibold text-[#4A4752]">Contents</span>
+                  <span className="text-[12px] text-mute">{approved.filter((n) => titles.some((c) => c.n === n)).length} of {titles.length} approved</span>
+                </div>
+                {bookChapters(titles).map((c) => (
+                  <button onClick={()=>{setChapter(c.n);window.scrollTo({top:0,behavior:"smooth"});}} key={c.n} aria-current={c.n === chapter ? "page" : undefined} className={`mb-0.5 flex w-full items-start gap-3 rounded-[4px] px-3 py-2.5 text-left ${c.n === chapter ? "bg-pine-wash text-pine" : "text-[#4A4752] hover:bg-white"}`}>
+                    <span className="w-4 shrink-0 pt-px text-[12px] tabular-nums text-mute">{c.n}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block truncate text-[14px] ${c.n === chapter ? "font-semibold" : ""}`}>{c.title}</span>
+                      <span className="mt-0.5 block text-[12px] text-mute">{c.minutes} min read · {approved.includes(c.n) ? "Approved" : "Draft"}</span>
+                    </span>
+                    {approved.includes(c.n) && <Check size={13} className="mt-1 shrink-0 text-success" />}
                   </button>
                 ))}
-                <button onClick={()=>{const n=titles.length+1;setTitles(xs=>[...xs,{n,title:"Untitled chapter",status:"Draft"}]);setChapter(n);}} className="mt-2 px-3 text-[14px] text-mute hover:text-ink">+ New chapter</button>
-              </div>
+                <button onClick={()=>{const n=titles.length+1;setTitles(xs=>[...xs,{n,title:"Untitled chapter",status:"Draft"}]);setChapter(n);setEditing(true);}} className="mt-2 px-3 text-[14px] text-mute hover:text-ink">+ New chapter</button>
+              </nav>
             </motion.aside>
           )}
         </AnimatePresence>
@@ -217,14 +232,14 @@ export default function Book() {
               </div>
             ))}
 
-            {!editing && (
+            {!editing && chapter === 3 && (
               <blockquote className="my-12">
                 <p className="font-serif text-[30px] italic leading-snug text-pine">“{ch.quote}”</p>
                 <footer className="mt-3 text-[11px] uppercase tracking-[0.08em] text-mute">{ch.quoteSource}</footer>
               </blockquote>
             )}
 
-            <p className="mb-7 font-serif text-[21px] leading-[1.7]">{ch.closing}</p>
+            {chapter === 3 && <p className="mb-7 font-serif text-[21px] leading-[1.7]">{ch.closing}</p>}
 
             {editing && <SlashLine onInsert={(block)=>insertAfter(null, block)}/>}
             {editing && <FormatBar onComment={(blockId, quote, note) => { setComments((xs) => [...xs, { id: uid(), block: blockId, quote, note }]); audit(`Book comment: ${note}`, "Book"); notify("Comment added"); }} />}
@@ -274,6 +289,8 @@ export default function Book() {
           </div>
         </article>
       </div>
+      {sheet && <BookPublish initialTab={sheet} titles={titles} approved={approved} onClose={() => setSheet(null)} />}
+      <BookPrint titles={titles} approved={approved} />
     </div>
   );
 }
