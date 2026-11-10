@@ -1,0 +1,6 @@
+"use client";
+import { useState } from "react";
+import { Page, PageHead, PButton, PCard } from "./paper";
+import { download, useDemo, type AuditEvent } from "@/lib/demo";
+import { Empty } from "./demo-ui";
+export function AuditLog(){ const [events]=useDemo<AuditEvent[]>("audit",[]);const [q,setQ]=useState("");return <Page><PageHead eyebrow="11.05 · Governance" title="A trace of every change." actions={<PButton onClick={()=>download("evermind-audit.json",events)}>Export audit trail</PButton>}/><p className="demo-muted">Local demo events. This is not a tamper-proof production audit log.</p><label className="demo-search"><input aria-label="Search audit trail" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search by action or module…"/></label><PCard style={{padding:24}}>{!events.length&&<Empty body="Actions you take in this workspace will appear here."/>}{events.filter(e=>(e.title+e.kind).toLowerCase().includes(q.toLowerCase())).map(e=><div key={e.id} className="demo-row"><div><strong>{e.title}</strong><p>{e.kind} · {new Date(e.time).toLocaleString("en-GB",{timeZone:"Asia/Dhaka"})}</p></div><span className="demo-muted">You · Demo</span></div>)}</PCard></Page>;}
