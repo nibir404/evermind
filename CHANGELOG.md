@@ -2,6 +2,21 @@
 
 All notable changes to EverMind are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org).
 
+## [0.6.0] - 2026-11-10
+
+### Added
+- **App-like mobile (353px and up):** floating Liquid Glass tab bar (Home, Ask, Talk, Approvals, More) with a sliding lens and an approvals badge; More opens a sheet listing every section; dialogs become bottom sheets.
+- **Ask, ChatGPT-style:** collapsible chat sidebar (a drawer on phones), centred greeting with suggestions, streamed answers, quiet answer actions and a rounded composer that grows as you type. Full screen on phones.
+- **Book media:** image, video (YouTube, Vimeo or file), audio and link-card blocks from the / menu, by link or upload, with captions; included in exports and the PDF.
+
+### Changed
+- 44pt touch targets, no iOS zoom on focus, overflowing rows wrap instead of clipping.
+- Ask, Talk and the Knowledge brain run full screen on phones with their own Back button.
+- Comfortable content width on large displays up to 2560px.
+
+### Fixed
+- Frosted surfaces (tab bar, sheets, dialogs, Spotlight, toasts) now blur in Chrome and Android; the CSS pipeline had been dropping the standard backdrop-filter.
+
 ## [0.5.0] - 2026-11-10
 
 ### Added
@@ -69,6 +84,7 @@ All notable changes to EverMind are recorded here. The format follows [Keep a Ch
 ### Added
 - First complete demo: landing page, sign-up and onboarding, home brief, Talk with 3D avatar, Ask, Decision Studio, knowledge brain, approvals, calendar, email, tasks, access, audit trail, security and settings.
 
+[0.6.0]: https://github.com/nibir404/evermind/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/nibir404/evermind/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/nibir404/evermind/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nibir404/evermind/compare/v0.3.0...v0.3.1
