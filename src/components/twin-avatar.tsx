@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, ContactShadows, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -71,12 +71,19 @@ function View({ zoom, reset }: { zoom: number; reset: number }) {
   );
 }
 
-export default function TwinAvatar({ speaking = false, zoom = 1 }: { speaking?: boolean; zoom?: number }) {
-  const [angle, setAngle] = useState(0);
-  const [reset, setReset] = useState(0);
-
+export default function TwinAvatar({
+  speaking = false,
+  zoom = 1,
+  angle = 0,
+  reset = 0,
+}: {
+  speaking?: boolean;
+  zoom?: number;
+  angle?: number;
+  reset?: number;
+}) {
   return (
-    <div className="twin-3d" role="group" aria-label="Interactive 3D digital twin avatar. Drag to orbit, or use rotation buttons.">
+    <div className="twin-3d" role="group" aria-label="Interactive 3D digital twin avatar. Drag to orbit.">
       <Canvas
         shadows
         dpr={[1, 1.5]}
@@ -95,12 +102,6 @@ export default function TwinAvatar({ speaking = false, zoom = 1 }: { speaking?: 
         </Suspense>
         <View zoom={zoom} reset={reset} />
       </Canvas>
-      <div className="twin-orbit-controls">
-        <button aria-label="Rotate avatar left" onClick={() => setAngle((a) => a - Math.PI / 4)}>←</button>
-        <button onClick={() => { setAngle(0); setReset((x) => x + 1); }}>Front</button>
-        <button aria-label="Rotate avatar right" onClick={() => setAngle((a) => a + Math.PI / 4)}>→</button>
-      </div>
-      <span className="twin-model-caption">3D digital twin</span>
     </div>
   );
 }

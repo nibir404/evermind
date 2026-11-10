@@ -37,7 +37,7 @@
 
 ## 4. Key Workspaces & Modules
 - `Home` (`/home`): Readiness score (72/100), quick query bar, attention items, weekly learning summary.
-- `Ask` (`/ask`) & `Talk` (`/talk`): Conversational thinking interfaces with evidence attribution and 3D avatar voice interaction.
+- `Ask` (`/ask`) & `Talk` (`/talk`): Conversational thinking interfaces with evidence attribution. Talk mode is dedicated voice/listening with Web Speech API and demo simulation, unified right-hand 3D view controls (front, rotate left/right, zoom in/out), live captions, and clean non-overlapping bottom action bar.
 - `Decision Studio` (`/decisions`, `/decide`): Multi-option decision analysis, risk assessment, and timing windows.
 - `Knowledge & Brain` (`/knowledge`, `/brain`, `/memories`, `/memory/*`): Provenance-verified memory graph and document repository.
 - `Executive Actions & Approvals` (`/actions`, `/approvals`, `/tasks`, `/calendar`, `/email`, `/rules`): Sign-off workflows, tone matching analysis, and boundaries.
