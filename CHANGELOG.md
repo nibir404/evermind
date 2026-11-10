@@ -2,6 +2,18 @@
 
 All notable changes to EverMind are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org).
 
+## [0.5.0] - 2026-11-10
+
+### Added
+- **Book contents panel:** every chapter with reading time and approval status, visible while reading and editing.
+- **Publish as PDF:** print-ready A4 layout with optional cover page and table of contents; all chapters or approved only.
+- **Export** the biography as Word (.doc), Markdown, HTML or JSON.
+- **Share:** choose who can read it (only you, family and beneficiaries, anyone with the link), copy the link, use the system share sheet or email.
+- Sample text for chapters 1, 2, 4, 5 and 6.
+
+### Fixed
+- The chapter 3 pull quote and closing paragraph no longer appear on every chapter.
+
 ## [0.4.0] - 2026-11-10
 
 ### Added
@@ -57,6 +69,7 @@ All notable changes to EverMind are recorded here. The format follows [Keep a Ch
 ### Added
 - First complete demo: landing page, sign-up and onboarding, home brief, Talk with 3D avatar, Ask, Decision Studio, knowledge brain, approvals, calendar, email, tasks, access, audit trail, security and settings.
 
+[0.5.0]: https://github.com/nibir404/evermind/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/nibir404/evermind/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nibir404/evermind/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nibir404/evermind/compare/v0.2.0...v0.3.0
