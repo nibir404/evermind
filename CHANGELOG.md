@@ -2,6 +2,11 @@
 
 All notable changes to EverMind are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org).
 
+## [0.3.1] - 2026-11-10
+
+### Changed
+- The dot texture on Talk now reacts to the cursor: nearby dots grow, turn lime and push outward, then ease back. It stays static when reduced motion is on. Built as a reusable `DotField` component.
+
 ## [0.3.0] - 2026-11-10
 
 ### Added
@@ -36,6 +41,7 @@ All notable changes to EverMind are recorded here. The format follows [Keep a Ch
 ### Added
 - First complete demo: landing page, sign-up and onboarding, home brief, Talk with 3D avatar, Ask, Decision Studio, knowledge brain, approvals, calendar, email, tasks, access, audit trail, security and settings.
 
+[0.3.1]: https://github.com/nibir404/evermind/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nibir404/evermind/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nibir404/evermind/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nibir404/evermind/releases/tag/v0.1.0
