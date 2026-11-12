@@ -31,6 +31,8 @@ const icons = {
     </>
   ),
   book: <path d="M2 4h6a4 4 0 014 4v13a3 3 0 00-3-3H2zM22 4h-6a4 4 0 00-4 4v13a3 3 0 013-3h7z" {...stroke} />,
+  family: <path d="M9 11a4 4 0 100-8 4 4 0 000 8zM2 21v-1a6 6 0 0112 0v1M17 11a3 3 0 100-6M22 21v-1a5 5 0 00-4-4.9" {...stroke} />,
+  hologram: <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5" {...stroke} />,
   approvals: <path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z M9 12l2 2 4-4" {...stroke} />,
 };
 
@@ -42,6 +44,8 @@ const nav: { href: string; label: string; icon: keyof typeof icons }[] = [
   { href: "/brain", label: "Knowledge brain", icon: "brain" },
   { href: "/book", label: "Book", icon: "book" },
   { href: "/approvals", label: "Approvals", icon: "approvals" },
+  { href: "/family", label: "Family succession", icon: "family" },
+  { href: "/devices", label: "Hologram devices", icon: "hologram" },
 ];
 
 export function Logo({ size = 36 }: { size?: number }) {
