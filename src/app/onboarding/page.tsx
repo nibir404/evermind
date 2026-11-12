@@ -117,20 +117,23 @@ function Welcome({ onNext }: { onNext: () => void }) {
 }
 
 function AboutYou({ onNext }: { onNext: () => void }) {
- const [user]=useDemo("profile",profileSeed);
+ const [user,setUser]=useDemo("profile",profileSeed);
   const [picked, setPicked] = useDemo<string[]>("onboarding-priorities",PRIORITIES.slice(0, 2));
   const toggle = (p: string) =>
     setPicked((xs) => (xs.includes(p) ? xs.filter((x) => x !== p) : xs.length < 3 ? [...xs, p] : xs));
   return (
-    <Center title="Is this you?" sub="We filled this in from your public profile.">
+    <Center title="Tell us who you are." sub="Founder, chairman or managing director. Edit anything below.">
       <div className="surface w-[620px] text-left">
         <div className="flex items-center gap-4 p-6">
           <span className="size-14 shrink-0 rounded-full" style={{ backgroundColor: "#fff", backgroundImage: "url(/twin/portrait-white.png)", backgroundSize: "200%", backgroundPosition: "50% 10%" }} />
           <div className="flex-1">
-            <p className="text-[20px] font-semibold">{user.name}</p>
-            <p className="text-[14px] text-slate">{user.title} · {user.org}</p>
+            <input aria-label="Your full name" value={user.name} onChange={e=>setUser(u=>({...u,name:e.target.value}))} placeholder="Your full name" className="w-full bg-transparent text-[20px] font-semibold outline-none" />
+            <div className="flex gap-2 text-[14px] text-slate">
+              <input aria-label="Your title" value={user.title} onChange={e=>setUser(u=>({...u,title:e.target.value}))} placeholder="Title, e.g. Chairman" className="w-1/2 bg-transparent outline-none" />
+              <input aria-label="Your company" value={user.org} onChange={e=>setUser(u=>({...u,org:e.target.value}))} placeholder="Company or group" className="w-1/2 bg-transparent outline-none" />
+            </div>
           </div>
-          <Link href="/settings" aria-label="Edit profile"><Pencil size={16} className="text-mute"/></Link>
+          <Pencil size={16} className="text-mute" aria-hidden />
         </div>
         <div className="border-t border-line px-6 py-4">
           <p className="mb-3 text-[13px] text-mute">What matters most right now? Pick up to three.</p>

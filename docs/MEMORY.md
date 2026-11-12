@@ -4,7 +4,8 @@
 > **Status**: Active & Evergreen  
 
 ## 1. Project Identity & Philosophy
-- **Identity**: EverMind is an executive AI digital twin platform designed for Dr. Sabur Khan (Chair, Board of Trustees at Daffodil University Group).
+- **Identity**: EverMind is an AI digital twin for business founders, chairmen and managing directors, so their judgment keeps guiding the business for the next generation of their bloodline. Dr. Sabur Khan is the demo persona.
+- **Users**: the founder plus verified bloodline successors only (sons, daughters, grandchildren). Not employees.
 - **Core Principle**: *"An AI twin that thinks like you — and never acts without you."*
 - **Autonomy Hierarchy**:
   - `L0`: Recall & Remember (always on).
@@ -43,6 +44,10 @@
 - `Executive Actions & Approvals` (`/actions`, `/approvals`, `/tasks`, `/calendar`, `/email`, `/rules`): Sign-off workflows, tone matching analysis, and boundaries.
 - `Boardroom` (`/boardroom`): Disclosed AI observer meeting simulation and summary extraction.
 - `Legacy` (`/legacy`, `/legacy/activation`): Digital legacy preservation with multi-party safeguarded activation.
+
+- `Family succession` (`/family`, `/council`, `/succession`): successors with bloodline verification and per-topic access; family council log for escalations and flagged answers; twin modes, activation triggers, quorum approval, never-advise boundaries and the founder's letter. Data layer in `src/lib/org.ts`.
+- `Successor portal` (`/heir`): separate PIN sign-in for verified heirs; answers cite the founder's evidence with confidence, and anything out of scope, binding or uncertain goes to the family council.
+- `Hologram` (`/hologram?device=<id>`, `/devices`): full-screen black hologram mode with PIN identity, voice in/out and the 3D avatar; device fleet with per-person access, remote switch-off and updates.
 
 ## 5. Verification Checklist
 - [x] Linter clean (`npm run lint` passes).

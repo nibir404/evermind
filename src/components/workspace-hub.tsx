@@ -11,6 +11,7 @@ const groups = [
   ["Think & decide", [["Ask your twin","/ask"],["Talk to your twin","/talk"],["Decision Studio","/decisions"],["Decision analysis","/decide"]]],
   ["Executive actions", [["Actions overview","/actions"],["Approvals","/approvals"],["Tasks","/tasks"],["Calendar","/calendar"],["Email assistance","/email"],["Delegation rules","/rules"]]],
   ["Governance", [["Boardroom","/boardroom"],["Access & sharing","/access"],["Security","/security"],["Audit trail","/audit"],["Digital Legacy","/legacy"],["Legacy activation","/legacy/activation"]]],
+  ["Family succession", [["Successors","/family"],["Family council","/council"],["Succession rules","/succession"],["Hologram devices","/devices"],["Successor portal","/heir"],["Hologram mode","/hologram"]]],
   ["Your account", [["Profile","/settings"],["Your data","/settings/data"],["Integrations","/settings/integrations"],["Billing","/settings/billing"],["Help","/support"]]],
 ] as const;
 export function WorkspaceHub() {
